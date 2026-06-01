@@ -1,10 +1,13 @@
 import { createFileRoute } from '@tanstack/react-router'
 import AppShell from '../components/AppShell'
-import { reviewsData } from '../lib/mock-data'
+import { getAcademyState } from '../lib/data/fetcher'
 import { ClipboardCheck, Sparkles, TrendingUp, AlertTriangle, Lightbulb } from 'lucide-react'
 
 export const Route = createFileRoute('/reviews')({
-  loader: () => reviewsData,
+  loader: async () => {
+    const state = await getAcademyState()
+    return state.reviews
+  },
   component: ReviewsPage,
 })
 

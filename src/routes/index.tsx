@@ -1,13 +1,16 @@
 import { createFileRoute } from '@tanstack/react-router'
 import AppShell from '../components/AppShell'
-import { dashboardData } from '../lib/mock-data'
+import { getAcademyState } from '../lib/data/fetcher'
 import { 
   PlayCircle, CheckCircle2, AlertCircle, HelpCircle, 
   Hourglass, Trophy, Target, BookOpen, Flame, RefreshCw, XCircle
 } from 'lucide-react'
 
 export const Route = createFileRoute('/')({
-  loader: () => dashboardData,
+  loader: async () => {
+    const state = await getAcademyState()
+    return state.dashboard
+  },
   component: DashboardPage,
 })
 
