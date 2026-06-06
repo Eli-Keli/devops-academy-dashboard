@@ -4,17 +4,38 @@ import { fileURLToPath } from 'node:url'
 import { dashboardData, roadmapData, labsData, reviewsData } from '../src/lib/mock-data'
 import type { AcademyState } from '../src/lib/data/fetcher'
 
-const OBSIDIAN_FILE = '/Users/mac/Desktop/ANTIGRAVITY/DevOps Academy Context/OBSIDIAN-Devops-Academy-System.md'
 const OUTPUT_FILE = path.resolve(process.cwd(), 'src/lib/data/academy-state.json')
 
-async function runSync() {
-  console.log(`Starting sync pipeline from: ${OBSIDIAN_FILE}`)
+async function readObsidianFile(): Promise<{ content: string; filePath: string }> {
+  const paths = [
+    process.env.OBSIDIAN_FILE,
+    '/Users/mac/Knowledge/Obsidian/OBSIDIAN-Devops-Academy-System.md',
+    '/Users/mac/Desktop/ANTIGRAVITY/DevOps Academy Context/OBSIDIAN-Devops-Academy-System.md',
+    path.resolve(process.cwd(), '../DevOps Academy Context/OBSIDIAN-Devops-Academy-System.md'),
+    path.resolve(process.cwd(), 'DevOps Academy Context/OBSIDIAN-Devops-Academy-System.md')
+  ].filter((p): p is string => !!p)
 
+  for (const filePath of paths) {
+    try {
+      const content = await fs.readFile(filePath, 'utf-8')
+      return { content, filePath }
+    } catch (e) {
+      // Continue searching
+    }
+  }
+  throw new Error('Could not find or read OBSIDIAN-Devops-Academy-System.md at any configured paths.')
+}
+
+async function runSync() {
   let fileContent = ''
+  let resolvedPath = ''
   try {
-    fileContent = await fs.readFile(OBSIDIAN_FILE, 'utf-8')
-  } catch (error) {
-    console.error(`Error: Could not read Obsidian file at ${OBSIDIAN_FILE}. Falling back to defaults.`)
+    const result = await readObsidianFile()
+    fileContent = result.content
+    resolvedPath = result.filePath
+    console.log(`Starting sync pipeline from: ${resolvedPath}`)
+  } catch (error: any) {
+    console.error(`Error: ${error.message || error}. Falling back to defaults.`)
     await writeDefaultState()
     return
   }

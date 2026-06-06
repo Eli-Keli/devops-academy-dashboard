@@ -1,6 +1,6 @@
-import { Link, useRouterState } from '@tanstack/react-router'
+import { Link, useRouterState, useNavigate } from '@tanstack/react-router'
 import { LayoutDashboard, Milestone, Terminal, ClipboardCheck, Search, Command, RefreshCw } from 'lucide-react'
-import { useState, type ReactNode } from 'react'
+import { useState, useEffect, type ReactNode } from 'react'
 import ThemeToggle from './ThemeToggle'
 
 interface AppShellProps {
@@ -18,7 +18,36 @@ const navItems = [
 
 export default function AppShell({ children, title, subtitle }: AppShellProps) {
   const pathname = useRouterState({ select: (s) => s.location.pathname })
+  const navigate = useNavigate()
   const [showSearch, setShowSearch] = useState(false)
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      const isCmd = e.metaKey || e.ctrlKey
+
+      if (isCmd && e.key.toLowerCase() === 'k') {
+        e.preventDefault()
+        setShowSearch((prev) => !prev)
+      } else if (isCmd && e.key === '1') {
+        e.preventDefault()
+        navigate({ to: '/' })
+      } else if (isCmd && e.key === '2') {
+        e.preventDefault()
+        navigate({ to: '/roadmap' })
+      } else if (isCmd && e.key === '3') {
+        e.preventDefault()
+        navigate({ to: '/labs' })
+      } else if (isCmd && e.key === '4') {
+        e.preventDefault()
+        navigate({ to: '/reviews' })
+      } else if (e.key === 'Escape') {
+        setShowSearch(false)
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [navigate])
 
   return (
     <div className="flex min-h-screen w-full bg-[var(--bg-base)] text-[var(--sea-ink)]">

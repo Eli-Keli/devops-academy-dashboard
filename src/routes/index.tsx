@@ -1,9 +1,11 @@
 import { createFileRoute } from '@tanstack/react-router'
 import AppShell from '../components/AppShell'
 import { getAcademyState } from '../lib/data/fetcher'
+import { useState, useEffect } from 'react'
 import { 
   PlayCircle, CheckCircle2, AlertCircle, HelpCircle, 
-  Hourglass, Trophy, Target, BookOpen, Flame, RefreshCw, XCircle
+  Hourglass, Trophy, Target, BookOpen, Flame, RefreshCw, XCircle,
+  Check, Copy
 } from 'lucide-react'
 
 export const Route = createFileRoute('/')({
@@ -17,6 +19,80 @@ export const Route = createFileRoute('/')({
 function DashboardPage() {
   const data = Route.useLoaderData()
   const { todayMission, activeTrack, lastFeedback, actionRequiredList, analytics } = data
+
+  // Hydration-safe persistent checklist state
+  const storageKey = todayMission ? `devops-mission-checklist-${todayMission.id}` : ''
+  const [checkedState, setCheckedState] = useState<Record<string, boolean>>({})
+  const [hydrated, setHydrated] = useState(false)
+  const [copied, setCopied] = useState(false)
+
+  useEffect(() => {
+    if (!storageKey) return
+    try {
+      const stored = window.localStorage.getItem(storageKey)
+      if (stored) {
+        setCheckedState(JSON.parse(stored))
+      }
+    } catch (e) {
+      console.warn('Failed to load checklist state', e)
+    }
+    setHydrated(true)
+  }, [storageKey])
+
+  const toggleChecked = (id: string) => {
+    if (!storageKey) return
+    try {
+      const nextState = { ...checkedState, [id]: !checkedState[id] }
+      setCheckedState(nextState)
+      window.localStorage.setItem(storageKey, JSON.stringify(nextState))
+    } catch (e) {
+      console.warn('Failed to save checklist state', e)
+    }
+  }
+
+  const handleCopyPOW = async () => {
+    if (!todayMission) return
+
+    const objectivesList = todayMission.objectives.map((obj) => {
+      const isChecked = checkedState[`obj-${obj.id}`] || false
+      return `[${isChecked ? 'x' : ' '}] ${obj.description}`
+    }).join('\n')
+
+    const checkpointsList = todayMission.checkpointQuestions.map((q, idx) => {
+      const isChecked = checkedState[`check-${idx}`] || false
+      return `[${isChecked ? 'x' : ' '}] ${q}`
+    }).join('\n')
+
+    const text = `🚀 DEVOPS ACADEMY SUBMISSION
+Track: ${todayMission.trackName}
+Mission: ${todayMission.title}
+Date: ${new Date().toLocaleDateString(undefined, { year: 'numeric', month: '2-digit', day: '2-digit' })}
+
+---
+## 🎯 Objectives Completed:
+${objectivesList}
+
+---
+## ❓ Checkpoints Checked:
+${checkpointsList}
+
+---
+## 🛠️ Proof of Work Specification:
+${todayMission.proofOfWorkSpec}
+
+---
+[Logs & Execution Proof Output]
+<Paste your terminal command outputs, screenshot URLs, or setup configuration logs here>
+`
+
+    try {
+      await navigator.clipboard.writeText(text)
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
+    } catch (e) {
+      console.error('Failed to copy to clipboard', e)
+    }
+  }
 
   return (
     <AppShell 
@@ -56,14 +132,35 @@ function DashboardPage() {
                   <Target className="h-4 w-4 text-[var(--lagoon-deep)]" />
                   Core Objectives
                 </h3>
-                <ul className="space-y-2.5">
-                  {todayMission.objectives.map((obj) => (
-                    <li key={obj.id} className="flex items-start gap-3 text-sm text-[var(--sea-ink-soft)]">
-                      <PlayCircle className="h-4 w-4 text-[var(--lagoon-deep)] shrink-0 mt-0.5" />
-                      <span>{obj.description}</span>
-                    </li>
-                  ))}
-                </ul>
+                <div className="space-y-2.5">
+                  {todayMission.objectives.map((obj) => {
+                    const id = `obj-${obj.id}`
+                    const isChecked = hydrated && !!checkedState[id]
+                    return (
+                      <label 
+                        key={obj.id} 
+                        className="flex items-start gap-3 text-sm text-[var(--sea-ink-soft)] cursor-pointer select-none hover:text-[var(--sea-ink)] transition-colors"
+                      >
+                        <input 
+                          type="checkbox" 
+                          checked={isChecked} 
+                          onChange={() => toggleChecked(id)} 
+                          className="sr-only" 
+                        />
+                        <span className={`h-5 w-5 rounded border flex items-center justify-center shrink-0 mt-0.5 transition-all ${
+                          isChecked 
+                            ? 'bg-[var(--lagoon)] border-[var(--lagoon)] text-[var(--surface)]' 
+                            : 'border-[var(--line)] bg-[var(--surface-strong)] hover:border-[var(--sea-ink-soft)]'
+                        }`}>
+                          {isChecked && <Check className="h-3.5 w-3.5 stroke-[3]" />}
+                        </span>
+                        <span className={isChecked ? 'line-through opacity-70 transition-all' : 'transition-all'}>
+                          {obj.description}
+                        </span>
+                      </label>
+                    )
+                  })}
+                </div>
               </div>
 
               {/* Labs */}
@@ -98,6 +195,48 @@ function DashboardPage() {
                 </ul>
               </div>
 
+              {/* Socratic Checkpoints */}
+              {todayMission.checkpointQuestions && todayMission.checkpointQuestions.length > 0 && (
+                <div className="mt-6 border-t border-[var(--line)] pt-6">
+                  <h3 className="text-sm font-bold uppercase tracking-wider text-[var(--sea-ink)] mb-3 flex items-center gap-2">
+                    <HelpCircle className="h-4 w-4 text-[var(--lagoon-deep)]" />
+                    Socratic Checkpoints
+                  </h3>
+                  <p className="text-xs text-[var(--sea-ink-soft)] mb-3 leading-relaxed">
+                    Evaluate your knowledge parameters before submitting evidence:
+                  </p>
+                  <div className="space-y-2.5">
+                    {todayMission.checkpointQuestions.map((q, idx) => {
+                      const id = `check-${idx}`
+                      const isChecked = hydrated && !!checkedState[id]
+                      return (
+                        <label 
+                          key={idx} 
+                          className="flex items-start gap-3 text-xs text-[var(--sea-ink-soft)] cursor-pointer select-none hover:text-[var(--sea-ink)] transition-colors p-3 bg-[var(--foam)] rounded-xl border border-[var(--line)]"
+                        >
+                          <input 
+                            type="checkbox" 
+                            checked={isChecked} 
+                            onChange={() => toggleChecked(id)} 
+                            className="sr-only" 
+                          />
+                          <span className={`h-4.5 w-4.5 rounded border flex items-center justify-center shrink-0 mt-0.5 transition-all ${
+                            isChecked 
+                              ? 'bg-[var(--lagoon)] border-[var(--lagoon)] text-[var(--surface)]' 
+                              : 'border-[var(--line)] bg-[var(--surface-strong)]'
+                          }`}>
+                            {isChecked && <Check className="h-3 w-3 stroke-[3]" />}
+                          </span>
+                          <span className={isChecked ? 'line-through opacity-70 transition-all' : 'transition-all'}>
+                            {q}
+                          </span>
+                        </label>
+                      )
+                    })}
+                  </div>
+                </div>
+              )}
+
               {/* Resources */}
               <div className="mt-6 border-t border-[var(--line)] pt-6">
                 <h3 className="text-sm font-bold uppercase tracking-wider text-[var(--sea-ink)] mb-3 flex items-center gap-2">
@@ -124,11 +263,19 @@ function DashboardPage() {
 
               {/* Proof of Work */}
               <div className="mt-6 border-t border-[var(--line)] pt-6">
-                <div className="bg-[rgba(47,106,74,0.06)] border border-[rgba(47,106,74,0.14)] p-4 rounded-xl">
+                <div className="bg-[rgba(47,106,74,0.06)] border border-[rgba(47,106,74,0.14)] p-5 rounded-xl">
                   <h4 className="text-xs font-bold text-[var(--palm)] uppercase tracking-wider">Proof of Work Target</h4>
                   <p className="text-xs text-[var(--sea-ink-soft)] mt-2 leading-relaxed">
                     {todayMission.proofOfWorkSpec}
                   </p>
+                  
+                  <button
+                    onClick={handleCopyPOW}
+                    className="mt-4 w-full flex items-center justify-center gap-2 rounded-xl bg-[var(--lagoon-deep)] hover:bg-[var(--lagoon)] text-white px-4 py-2.5 text-xs font-semibold shadow-sm transition-all cursor-pointer border border-[rgba(79,184,178,0.18)]"
+                  >
+                    <Copy className="h-3.5 w-3.5" />
+                    {copied ? 'Copied to Clipboard!' : 'Copy Submission Template'}
+                  </button>
                 </div>
               </div>
             </section>

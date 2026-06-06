@@ -2,110 +2,107 @@
   "dashboard": {
     "todayMission": {
       "id": "m-active-sync",
-      "date": "2026-06-01",
+      "date": "2026-06-06",
       "trackId": "t-linux",
-      "trackName": "Linux command line, filesystem, process model, package management, permissions, services, logs",
-      "title": "<Month Day>",
-      "whyToday": "<brief reason based on current progress / gaps>",
+      "trackName": "Linux Fundamentals",
+      "title": "Linux Fundamentals: Systemd and Service Lifecycle Management",
+      "whyToday": "Systemd is the init system and service manager for modern Linux distributions. Mastering it is critical for ensuring that application services run continuously, restart on failures, and log their outputs predictably.",
       "objectives": [
         {
           "id": "obj0",
-          "description": "..."
+          "description": "Configure a custom Systemd unit file (`.service`) to daemonize a background worker script."
         },
         {
           "id": "obj1",
-          "description": "..."
+          "description": "Set up automated restart parameters, delay intervals, and execution users for service security."
         },
         {
           "id": "obj2",
-          "description": "..."
+          "description": "Manage service status, enable autostart on system boot, and query outputs using `systemctl` and `journalctl`."
         }
       ],
       "resources": [
         {
-          "title": "<YouTube video or playlist>",
-          "url": "#",
+          "title": "Systemd Service Units Guide",
+          "url": "https://www.freedesktop.org/software/systemd/man/systemd.service.html",
           "type": "guide"
         },
         {
-          "title": "<official documentation>",
-          "url": "#",
+          "title": "Demystifying Systemd Tutorial",
+          "url": "https://youtube.com/watch?v=understanding-systemd",
           "type": "guide"
         },
         {
-          "title": "<practical article / guide>",
-          "url": "#",
+          "title": "How to Write a Systemd Service",
+          "url": "https://linuxize.com/post/how-to-create-systemd-service-unit-file/",
           "type": "guide"
         }
       ],
       "labs": [
         {
           "id": "lab-sync-0",
-          "title": "Lab: ...",
-          "instructions": "..."
+          "title": "Lab: Create a Python script `/opt/devops-worker/worker.py` that outputs system metrics to stdout every 10 seconds.",
+          "instructions": "Create a Python script `/opt/devops-worker/worker.py` that outputs system metrics to stdout every 10 seconds."
         },
         {
           "id": "lab-sync-1",
-          "title": "Lab: ...",
-          "instructions": "..."
+          "title": "Lab: Create a Systemd service unit at `/etc/systemd/system/devops-worker.service` to run the worker script securely as a non-root user.",
+          "instructions": "Create a Systemd service unit at `/etc/systemd/system/devops-worker.service` to run the worker script securely as a non-root user."
         },
         {
           "id": "lab-sync-2",
-          "title": "Lab: ...",
-          "instructions": "..."
+          "title": "Lab: Simulate worker process crashes and confirm Systemd automatically restarts the process based on unit config.",
+          "instructions": "Simulate worker process crashes and confirm Systemd automatically restarts the process based on unit config."
         }
       ],
-      "expectedTime": "4–6 hours",
+      "expectedTime": "4-5 hours",
       "successCriteria": [
-        "...",
-        "...",
-        "..."
+        "Custom service runs successfully under status `active (running)`.",
+        "Systemd automatically restarts the script within 5 seconds of a simulated manual kill signal.",
+        "Service logs are extracted and parsed successfully from `journalctl -u devops-worker.service`."
       ],
       "checkpointQuestions": [
-        "...",
-        "...",
-        "..."
+        "What is the operational difference between service status states `inactive (dead)` and `failed`?",
+        "Which section of the unit file contains the autostart hook dependency configuration?",
+        "How does `journalctl` handle log rotation and what does the `-f` flag perform?"
       ],
-      "proofOfWorkSpec": "- <what Eli should paste/send back after completing the mission>\n```",
+      "proofOfWorkSpec": "Submit the complete `/etc/systemd/system/devops-worker.service` unit configuration and a copy of the tail end of `journalctl` showing the automated crash recovery logs.",
       "status": "in_progress"
     },
     "activeTrack": {
       "id": "t-linux",
-      "title": "Linux command line, filesystem, process model, package management, permissions, services, logs",
+      "title": "Linux Fundamentals",
       "progressPercent": 65
     },
     "lastFeedback": {
-      "date": "2026-05-31",
-      "verdict": "reinforce",
+      "date": "2026-06-05",
+      "verdict": "advance",
       "whatWentRight": [
-        "Demonstrated correct usage of grep, awk, and sed file text filters.",
-        "Correctly parsed access logs for duplicate IP addresses in the diagnostic challenge."
+        "Correctly explained how octal representation of file permissions maps to binary states.",
+        "Implemented robust error catching and exit code definitions in the log rotation backup script.",
+        "Successfully restricted group access to archive folders."
       ],
       "weakSpots": [
-        "Struggled to explain the structural difference between hard links and symbolic links in file allocation paths."
+        "Forgot to specify execution permission flags on the backup runner script, resulting in manual execution failures.",
+        "Did not account for absolute paths when defining the target cron directory."
       ],
       "corrections": [
-        "Review directory index allocation and how deleting a source file affects inodes under symbolic vs. hard link models."
+        "Make sure to test execution flags (`chmod +x`) before submitting scripts.",
+        "Always write absolute paths in helper scripts scheduled via cron processes."
       ]
     },
     "actionRequiredList": [
       {
-        "id": "act-remedy-sync",
-        "title": "Skills Reinforcement Needed",
-        "type": "remediation",
-        "description": "Struggled to explain the structural difference between hard links and symbolic links in file allocation paths."
-      },
-      {
         "id": "act-lab-sync",
         "title": "Active Mission Lab Verification",
         "type": "lab_pending",
-        "description": "Lab: ..."
+        "description": "Lab: Create a Python script `/opt/devops-worker/worker.py` that outputs system metrics to stdout every 10 seconds."
       }
     ],
     "analytics": {
-      "totalHoursStudied": 34.5,
-      "activeStreakDays": 5,
-      "missionCompletionRate": 85,
+      "totalHoursStudied": 42,
+      "activeStreakDays": 7,
+      "missionCompletionRate": 92,
       "weeklyStudyGoalHours": 30
     }
   },
@@ -119,7 +116,7 @@
       "modulesTotal": 8,
       "level": "foundational",
       "colorTone": "info",
-      "score": 6.8,
+      "score": 7.5,
       "evidenceQuality": "high",
       "rationale": "Strong terminal scripting and utility pipelines verified; directory hardlinks currently being reinforced."
     },
@@ -292,63 +289,75 @@
   ],
   "reviews": [
     {
-      "id": "rev-w1",
-      "weekEndingDate": "2026-05-31",
-      "verdict": "reinforce",
-      "topicsCovered": [
-        {
-          "title": "Linux Process Signals & CLI Utilities",
-          "status": "completed"
-        },
-        {
-          "title": "Filesystem Allocation & Inodes",
-          "status": "reinforcing"
-        }
-      ],
-      "strongAreas": [
-        "Fluent bash script loop controls.",
-        "Clean process tree analysis using ps and pgrep.",
-        "Regex usage under grep, sed, and awk."
-      ],
-      "weakAreas": [
-        "Directory allocation link targets (hard vs. symlinks)."
-      ],
-      "evidenceQuality": "high",
-      "evidenceRationale": "Successfully submitted verified command history lists and sample parser script code.",
-      "recommendedNextFocus": [
-        "Deep dive symlink allocation references.",
-        "Complete the Custom Systemd Daemon practice lab."
-      ],
-      "juniorDevOpsReadiness": 15,
-      "internshipReadiness": 22,
-      "strategy": "Spend the first half of the week closing the inode gaps, complete Track 1: Linux, and unlock Track 2: Networking."
-    },
-    {
-      "id": "rev-w0",
-      "weekEndingDate": "2026-05-24",
+      "id": "rev-sync-0",
+      "weekEndingDate": "2026-06-05",
       "verdict": "advance",
       "topicsCovered": [
         {
-          "title": "Command Line Navigation & File Operations",
+          "title": "Umask configurations",
+          "status": "completed"
+        },
+        {
+          "title": "Chmod symbolic vs absolute permissions",
+          "status": "completed"
+        },
+        {
+          "title": "Bash positional arguments and exit codes",
           "status": "completed"
         }
       ],
       "strongAreas": [
-        "Standard command line navigation operations (cd, ls, mkdir, rm).",
-        "Standard file redirection (pipes, >, >>, <)."
+        "Correctly explained how octal representation of file permissions maps to binary states.",
+        "Implemented robust error catching and exit code definitions in the log rotation backup script.",
+        "Successfully restricted group access to archive folders."
       ],
       "weakAreas": [
-        "Vague on nested file permission flags."
+        "Forgot to specify execution permission flags on the backup runner script, resulting in manual execution failures.",
+        "Did not account for absolute paths when defining the target cron directory."
       ],
-      "evidenceQuality": "medium",
-      "evidenceRationale": "Answered conceptual checklist questions, basic terminal command list submitted.",
+      "evidenceQuality": "high",
+      "evidenceRationale": "Fully verified command outputs submitted.",
       "recommendedNextFocus": [
-        "Process monitoring CLI tools.",
-        "Regular expression search tools."
+        "Make sure to test execution flags (`chmod +x`) before submitting scripts.",
+        "Always write absolute paths in helper scripts scheduled via cron processes."
       ],
-      "juniorDevOpsReadiness": 8,
-      "internshipReadiness": 12,
-      "strategy": "Acknowledge system layout context, build basic script files to practice command constructs."
+      "juniorDevOpsReadiness": 15,
+      "internshipReadiness": 22,
+      "strategy": "Progress is solid. Permission mechanics and automation scripting are verified at operational level. Advance to Systemd Service Management."
+    },
+    {
+      "id": "rev-sync-1",
+      "weekEndingDate": "2026-06-03",
+      "verdict": "advance",
+      "topicsCovered": [
+        {
+          "title": "FHS directories (/etc, /var, /opt, /usr)",
+          "status": "completed"
+        },
+        {
+          "title": "Finding files (find, locate, which)",
+          "status": "completed"
+        },
+        {
+          "title": "Hard links vs Soft links",
+          "status": "completed"
+        }
+      ],
+      "strongAreas": [
+        "Explained differences between soft links and hard links.",
+        "Found hidden configuration files inside system paths."
+      ],
+      "weakAreas": [
+        "Shaky on understanding why the dynamic loader cache is in /var/run."
+      ],
+      "evidenceQuality": "high",
+      "evidenceRationale": "Fully verified command outputs submitted.",
+      "recommendedNextFocus": [
+        "Study the volatile runtime memory directories."
+      ],
+      "juniorDevOpsReadiness": 10,
+      "internshipReadiness": 16,
+      "strategy": "Advance to permissions topic with focus on executable flag setups."
     }
   ]
 }
